@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = Path(os.getenv("DATA_PATH", ROOT / "data" / "cs-training.csv"))
 MODELS_DIR = Path(os.getenv("MODELS_DIR", ROOT / "models"))
-REPORTS_DIR = ROOT / "reports"
+REPORTS_DIR = Path(os.getenv("REPORTS_DIR", ROOT / "reports"))
 FIGURES_DIR = REPORTS_DIR / "figures"
 SCORER_PATH = Path(os.getenv("MODEL_PATH", MODELS_DIR / "scorer.joblib"))
 
