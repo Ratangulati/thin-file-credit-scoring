@@ -65,12 +65,13 @@ class CreditScorer:
         return pd.DataFrame(contrib, columns=self.feature_names, index=df.index)
 
 
-def credit_score(pd_: float | np.ndarray, base: float = 600, base_odds: float = 50, pdo: float = 40):
+def credit_score(pd_: float | np.ndarray, base: float = 660, base_odds: float = 15, pdo: float = 40):
     """Map probability of default to a 300-850 style score.
 
     Standard "points to double the odds" scaling: a score of `base` means
-    good:bad odds of `base_odds`:1 (PD ~2%), and every `pdo` points doubles
-    the odds. Clipped to [300, 850].
+    good:bad odds of `base_odds`:1 (PD ~6%, roughly this dataset's average
+    default rate), and every `pdo` points doubles the odds. Examples:
+    PD 2% -> ~728, 8% -> ~645, 25% -> ~567, 50% -> ~504. Clipped to [300, 850].
     """
     p = np.clip(pd_, 1e-6, 1 - 1e-6)
     factor = pdo / np.log(2)
