@@ -1,4 +1,4 @@
-"""Feature pipeline: imputation learned on training data + segment helpers."""
+"""Preprocessing and the thin-file segment."""
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -6,8 +6,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from src.config import BEHAVIORAL_FEATURES, THIN_FILE_MAX_OPEN_LINES, TRADITIONAL_FEATURES
 from src.data import cap_outliers
 
-# Columns that are missing in the raw data. Missingness itself is informative
-# (e.g. applicants who don't report income), so we add a 0/1 flag for each.
 IMPUTE_COLS = ["monthly_income", "dependents"]
 
 
@@ -16,11 +14,7 @@ def feature_columns(use_behavioral: bool) -> list[str]:
 
 
 class CreditPreprocessor(BaseEstimator, TransformerMixin):
-    """Select model columns, re-apply caps, median-impute, add missing flags.
-
-    Medians are learned in `fit` (training split only) and reused at scoring
-    time, so the API handles e.g. a null `monthly_income` exactly like training.
-    """
+    """Select model columns, re-apply caps, median-impute, add missing flags."""
 
     def __init__(self, columns: list[str]):
         self.columns = columns

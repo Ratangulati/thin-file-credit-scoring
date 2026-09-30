@@ -1,13 +1,4 @@
-"""Train baseline vs enhanced models (logistic regression + LightGBM).
-
-    python -m src.train
-
-Outputs (in models/):
-    models.joblib     dict of the four CreditScorer objects
-    test_set.joblib   held-out test rows (used by src.evaluate)
-    scorer.joblib     the model served by the API (enhanced LightGBM)
-    metadata.json     seeds, sizes, thresholds
-"""
+"""Train baseline and enhanced models. Run: python -m src.train"""
 import json
 from datetime import datetime, timezone
 
@@ -28,14 +19,11 @@ from src.features import CreditPreprocessor, feature_columns, thin_file_mask
 from src.model import CreditScorer
 from src.simulate import simulate_behavioral
 
-FEATURE_SETS = {"baseline": False, "enhanced": True}  # name -> use_behavioral
+FEATURE_SETS = {"baseline": False, "enhanced": True}
 SERVED_MODEL = "enhanced_lgbm"
 
 
 def make_logreg(columns: list[str]) -> Pipeline:
-    # All inputs are non-negative and most are right-skewed (income, counts),
-    # so log1p + standardise keeps the linear model well-behaved and its
-    # coefficients comparable.
     return Pipeline(
         [
             ("pre", CreditPreprocessor(columns)),
@@ -56,7 +44,7 @@ def make_lgbm(columns: list[str], pos_weight: float) -> Pipeline:
         subsample_freq=1,
         colsample_bytree=0.8,
         reg_lambda=1.0,
-        scale_pos_weight=pos_weight,  # class imbalance (~1 default : 14 non-default)
+        scale_pos_weight=pos_weight,
         random_state=SEED,
         verbose=-1,
     )
@@ -64,11 +52,7 @@ def make_lgbm(columns: list[str], pos_weight: float) -> Pipeline:
 
 
 def split(df: pd.DataFrame):
-    """Stratified train / calibration / test split.
-
-    Stratifying on target x thin-file keeps both the default rate and the
-    (small) thin-file segment proportionally represented in every split.
-    """
+    """Stratified train / calibration / test split."""
     strata = df[TARGET].astype(str) + "_" + thin_file_mask(df).astype(str)
     train, test = train_test_split(df, test_size=config.TEST_SIZE, stratify=strata, random_state=SEED)
     fit, cal = train_test_split(

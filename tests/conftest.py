@@ -1,5 +1,4 @@
-"""Shared fixtures. Tests use a small fake dataset with the Kaggle schema so they
-run without downloading the real file."""
+"""Fake data in the Kaggle schema so tests run without the real file."""
 import numpy as np
 import pandas as pd
 import pytest
@@ -28,10 +27,10 @@ def make_fake_raw(n: int = 3000, seed: int = 0) -> pd.DataFrame:
     )
     df.loc[rng.random(n) < 0.2, "MonthlyIncome"] = np.nan
     df.loc[rng.random(n) < 0.03, "NumberOfDependents"] = np.nan
-    df.loc[:4, "NumberOfTime30-59DaysPastDueNotWorse"] = 98  # sentinel code
-    df.loc[5, "RevolvingUtilizationOfUnsecuredLines"] = 50_000.0  # outlier
-    df.loc[6, "age"] = 0  # invalid
-    df.loc[7:400, "NumberOfOpenCreditLinesAndLoans"] = rng.integers(0, 3, 394)  # thin-file rows
+    df.loc[:4, "NumberOfTime30-59DaysPastDueNotWorse"] = 98
+    df.loc[5, "RevolvingUtilizationOfUnsecuredLines"] = 50_000.0
+    df.loc[6, "age"] = 0
+    df.loc[7:400, "NumberOfOpenCreditLinesAndLoans"] = rng.integers(0, 3, 394)
     return df
 
 

@@ -1,12 +1,4 @@
-"""Evaluate baseline vs enhanced models on the full test set and thin-file segment.
-
-    python -m src.evaluate      (run `python -m src.train` first)
-
-Outputs:
-    reports/metrics.csv, reports/results.md
-    reports/figures/roc_curves.png, segment_comparison.png,
-                    feature_importance.png, shap_beeswarm.png
-"""
+"""Metrics and charts on the test set. Run: python -m src.evaluate"""
 import joblib
 import matplotlib
 
@@ -20,7 +12,6 @@ from src import config  # noqa: E402
 from src.config import APPROVAL_RATE, BEHAVIORAL_FEATURES, SEED, TARGET  # noqa: E402
 from src.features import thin_file_mask  # noqa: E402
 
-# --- chart styling (validated categorical slots 1-2 on a light surface) ----
 SURFACE, INK, INK_2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
 COLORS = {"baseline": "#2a78d6", "enhanced": "#eb6834"}
 TRADITIONAL_BAR = "#a9a8a2"
@@ -51,10 +42,8 @@ plt.rcParams.update(
 )
 
 
-# --- metrics ---------------------------------------------------------------
 def recall_at_approval_rate(y, score, approval_rate: float = APPROVAL_RATE) -> float:
-    """Approve the `approval_rate` lowest-risk applicants; return the share of
-    actual defaulters that fall in the rejected group."""
+    """Approve the `approval_rate` lowest-risk applicants; return the share of actual defaulters that fall in the rejected group."""
     y, score = np.asarray(y), np.asarray(score)
     n_reject = int(round(len(y) * (1 - approval_rate)))
     rejected = np.argsort(-score, kind="stable")[:n_reject]
@@ -147,7 +136,6 @@ def update_readme(results_md: str, readme=config.ROOT / "README.md"):
     readme.write_text(f"{head}{start}\n{results_md}{end}{tail}")
 
 
-# --- charts ----------------------------------------------------------------
 def plot_roc(ctx: dict, algo: str = "lgbm"):
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.6), sharey=True)
     for ax, (seg, m) in zip(axes, ctx["masks"].items()):
@@ -164,7 +152,7 @@ def plot_roc(ctx: dict, algo: str = "lgbm"):
         ax.set_aspect("equal")
         ax.legend(loc="lower right")
     axes[0].set_ylabel("True positive rate")
-    fig.suptitle("ROC curves — LightGBM, baseline vs enhanced", x=0.02, ha="left",
+    fig.suptitle("ROC curves - LightGBM, baseline vs enhanced", x=0.02, ha="left",
                  fontsize=13, fontweight="bold", color=INK)
     fig.tight_layout()
     return fig
@@ -191,7 +179,7 @@ def plot_segment_comparison(metrics: pd.DataFrame, algo: str = "lgbm"):
         ax.set_ylim(0, min(1.0, top * 1.18) if top > 0.5 else top * 1.25)
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0))
-    fig.suptitle("Baseline vs enhanced by segment — LightGBM", x=0.02, ha="left",
+    fig.suptitle("Baseline vs enhanced by segment - LightGBM", x=0.02, ha="left",
                  fontsize=13, fontweight="bold", color=INK)
     fig.tight_layout(rect=(0, 0.07, 1, 1))
     return fig
@@ -210,7 +198,7 @@ def plot_feature_importance(contrib: pd.DataFrame):
     ax.barh(imp.index, imp.values, color=colors, height=0.7, zorder=3)
     ax.grid(axis="y", visible=False)
     ax.set_xlabel("Mean |SHAP value|  (impact on log-odds of default)")
-    ax.set_title("Feature importance — enhanced LightGBM", loc="left")
+    ax.set_title("Feature importance - enhanced LightGBM", loc="left")
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(color=COLORS["enhanced"], label="Behavioral (simulated)"),
                        Patch(color=TRADITIONAL_BAR, label="Traditional credit")], loc="lower right")
@@ -223,7 +211,7 @@ def plot_shap_beeswarm(contrib: pd.DataFrame, X: pd.DataFrame):
 
     shap.summary_plot(contrib.to_numpy(), X, show=False, max_display=15, plot_size=(9, 6.5))
     fig = plt.gcf()
-    fig.axes[0].set_title("SHAP summary — enhanced LightGBM", loc="left")
+    fig.axes[0].set_title("SHAP summary - enhanced LightGBM", loc="left")
     fig.tight_layout()
     return fig
 
@@ -237,7 +225,7 @@ def main():
     metrics.round(4).to_csv(config.REPORTS_DIR / "metrics.csv", index=False)
     md = results_markdown(metrics, ctx["auc_delta_ci"])
     (config.REPORTS_DIR / "results.md").write_text(md)
-    if config.REPORTS_DIR == config.ROOT / "reports":  # don't touch README for scratch runs
+    if config.REPORTS_DIR == config.ROOT / "reports":
         update_readme(md)
     print(md)
 

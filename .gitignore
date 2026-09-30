@@ -1,12 +1,6 @@
-# Data (Kaggle licence — download it yourself, see README)
-data/*
-!data/.gitkeep
+data/
+models/
 
-# Trained artifacts (regenerate with `make train`)
-models/*
-!models/.gitkeep
-
-# Python
 .venv/
 __pycache__/
 *.pyc

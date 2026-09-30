@@ -1,10 +1,4 @@
-"""Load and clean the Kaggle "Give Me Some Credit" training file.
-
-Cleaning here is deliberately *stateless* (fixed rules, no statistics learned
-from the data) so it can run before the train/test split without leakage.
-Median imputation of missing values is learned on the training split only —
-see `features.CreditPreprocessor`.
-"""
+"""Load and clean the Give Me Some Credit data."""
 from pathlib import Path
 
 import numpy as np
@@ -12,14 +6,9 @@ import pandas as pd
 
 from src.config import DATA_PATH, RENAME, TARGET
 
-# Past-due counts of 96 / 98 are known sentinel codes in this dataset (not real
-# counts). They co-occur with very high default rates, so rather than treating
-# them as missing we map them to the cap — "a lot of late payments".
 PAST_DUE_COLS = ["past_due_30_59", "past_due_60_89", "past_due_90_plus"]
 SENTINEL_CODES = (96, 98)
 
-# Domain caps (lower, upper). Values beyond these are data errors or so extreme
-# that they only add noise (e.g. revolving utilisation of 50,000x the limit).
 CAPS = {
     "revolving_utilization": (0.0, 2.0),
     "age": (18, 100),
@@ -61,7 +50,6 @@ def cap_outliers(df: pd.DataFrame) -> pd.DataFrame:
 
 def clean(df: pd.DataFrame) -> pd.DataFrame:
     """Row-level cleaning for the training data."""
-    # A handful of rows have age 0 (or < 18): not valid loan applicants.
     df = df[df["age"] >= 18].copy()
     df = cap_outliers(df)
     df[TARGET] = df[TARGET].astype(int)

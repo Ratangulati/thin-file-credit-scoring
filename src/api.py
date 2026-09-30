@@ -1,10 +1,4 @@
-"""Scoring API.
-
-    uvicorn src.api:app --port 8000      (or `make serve`)
-
-The model is loaded once at startup from `models/scorer.joblib` (override with
-the MODEL_PATH env var). It is never retrained here — run `make train`.
-"""
+"""Scoring API. Run: uvicorn src.api:app --port 8000"""
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
@@ -60,7 +54,6 @@ EXAMPLE_APPLICANT = {
 class Applicant(BaseModel):
     model_config = ConfigDict(extra="forbid", json_schema_extra={"examples": [EXAMPLE_APPLICANT]})
 
-    # Traditional credit features
     revolving_utilization: float = Field(ge=0, description="Balance / limit on unsecured revolving lines")
     age: int = Field(ge=18, le=120)
     past_due_30_59: int = Field(ge=0, description="Times 30-59 days past due in last 2 years")
@@ -72,7 +65,6 @@ class Applicant(BaseModel):
     past_due_60_89: int = Field(ge=0)
     dependents: int | None = Field(default=None, ge=0)
 
-    # Behavioral / device features (MCCS)
     on_time_payment_streak: int = Field(ge=0, le=600, description="Consecutive on-time months")
     avg_daily_km_driven: float = Field(ge=0, le=2000)
     active_driving_days_per_month: int = Field(ge=0, le=31)
@@ -129,7 +121,6 @@ def score(applicant: Applicant):
         raise HTTPException(503, "Model not loaded. Run `make train` first.")
 
     row = pd.DataFrame([applicant.model_dump()])
-    # Pydantic already enforced types; None -> NaN so the preprocessor imputes it.
     row = row.astype({c: float for c in row.columns})
     pd_ = float(scorer.predict_pd(row)[0])
 
@@ -140,7 +131,6 @@ def score(applicant: Applicant):
         Factor(
             feature=f,
             description=READABLE.get(f, f),
-            # None when the applicant didn't report it (the model used the imputed median)
             value=None if f in row and pd.isna(row.at[0, f]) else float(features[f]),
             effect="increases risk" if v > 0 else "decreases risk",
             impact=round(float(v), 4),

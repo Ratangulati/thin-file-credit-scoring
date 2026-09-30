@@ -17,9 +17,7 @@ def test_clean_caps_sentinels_and_invalid_ages(fake_raw_csv):
     assert df["age"].min() >= 18
     assert df["past_due_30_59"].max() <= CAPS["past_due_30_59"][1]
     assert df["revolving_utilization"].max() <= CAPS["revolving_utilization"][1]
-    # sentinel 98 is mapped to the cap, not dropped
     assert (df["past_due_30_59"] == CAPS["past_due_30_59"][1]).sum() >= 4
-    # clean() must NOT impute — that is learned on the train split
     assert df["monthly_income"].isna().any()
 
 
@@ -32,7 +30,6 @@ def test_preprocessor_imputes_with_train_medians_and_flags(fake_raw_csv):
     assert {"monthly_income_missing", "dependents_missing"} <= set(out.columns)
     assert out["monthly_income_missing"].sum() == df["monthly_income"].isna().sum()
 
-    # New data with a missing income gets the *training* median
     new = df.head(1).copy()
     new["monthly_income"] = np.nan
     assert pre.transform(new)["monthly_income"].iloc[0] == pre.medians_["monthly_income"]

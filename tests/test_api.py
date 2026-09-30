@@ -25,7 +25,7 @@ def scorer_path(tmp_path_factory):
 @pytest.fixture
 def client(scorer_path, monkeypatch):
     monkeypatch.setattr(config, "SCORER_PATH", scorer_path)
-    with TestClient(api.app) as c:  # context manager runs the lifespan (model load)
+    with TestClient(api.app) as c:
         yield c
 
 
@@ -47,7 +47,7 @@ def test_score_returns_valid_response(client, applicant):
     assert 0 <= body["probability_of_default"] <= 1
     assert 300 <= body["credit_score"] <= 850
     assert body["decision"] in {"approve", "review", "reject"}
-    assert body["thin_file"] is True  # example has 1 open credit line
+    assert body["thin_file"] is True
     assert len(body["top_factors"]) == 3
     impacts = [abs(f["impact"]) for f in body["top_factors"]]
     assert impacts == sorted(impacts, reverse=True)

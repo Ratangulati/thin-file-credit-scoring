@@ -42,11 +42,10 @@ def test_value_ranges(clean_df):
 
 
 def test_signal_is_mild_not_a_giveaway(clean_df):
-    """Each feature should help a little, in the documented direction, but no
-    single feature should come close to separating the classes."""
+    """Each feature helps a little, but none separates the classes on its own."""
     out = simulate_behavioral(clean_df)
     y = out[TARGET]
-    expected_sign = {  # +1: higher value => riskier
+    expected_sign = {
         "on_time_payment_streak": -1,
         "active_driving_days_per_month": -1,
         "late_night_driving_ratio": +1,

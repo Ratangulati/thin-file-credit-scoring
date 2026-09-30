@@ -125,7 +125,8 @@ On macOS, LightGBM needs the OpenMP runtime: `brew install libomp`.
 
 ```bash
 # 1. Get the data (Kaggle account required)
-#    https://www.kaggle.com/c/GiveMeSomeCredit/data  ->  data/cs-training.csv
+#    https://www.kaggle.com/c/GiveMeSomeCredit/data
+mkdir -p data && mv ~/Downloads/cs-training.csv data/
 
 # 2. Set up, train, evaluate, test
 make setup
@@ -211,8 +212,8 @@ src/
 tests/          simulation reproducibility, feature pipeline, metrics, API
 notebooks/      01_eda.ipynb
 reports/        metrics + figures
-data/           (gitignored) cs-training.csv
-models/         (gitignored) trained artifacts
+data/           cs-training.csv goes here (not committed: Kaggle licence)
+models/         created by `make train` (not committed)
 ```
 
 ## Limitations
