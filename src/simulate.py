@@ -14,7 +14,8 @@ Every applicant has an unobserved "financial stress" latent `z`:
 * `SIGNAL` (default 0.8) is the mean shift between defaulters and
   non-defaulters, in units of the noise SD. On its own, a latent with this
   shift ranks defaulters with AUC ~ Phi(0.8 / sqrt(2)) ~ 0.71. Each feature
-  below adds its own noise, so individually they are weaker (AUC ~0.55-0.65).
+  below adds its own noise, so individually they are weaker
+  (single-feature AUC ~0.55-0.71 on the real data).
 * `CREDIT_COUPLING` (default 0.3) ties behavior weakly to existing credit
   history (past-due counts, utilisation), so the new features are partly
   redundant with bureau data — as real telematics would be.
