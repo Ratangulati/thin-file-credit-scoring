@@ -137,6 +137,16 @@ def results_markdown(metrics: pd.DataFrame, cis: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def update_readme(results_md: str, readme=config.ROOT / "README.md"):
+    """Replace the block between the RESULTS markers in the README, if present."""
+    start, end = "<!-- RESULTS:START -->", "<!-- RESULTS:END -->"
+    if not readme.exists() or start not in (text := readme.read_text()):
+        return
+    head, rest = text.split(start, 1)
+    _, tail = rest.split(end, 1)
+    readme.write_text(f"{head}{start}\n{results_md}{end}{tail}")
+
+
 # --- charts ----------------------------------------------------------------
 def plot_roc(ctx: dict, algo: str = "lgbm"):
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.6), sharey=True)
@@ -227,6 +237,8 @@ def main():
     metrics.round(4).to_csv(config.REPORTS_DIR / "metrics.csv", index=False)
     md = results_markdown(metrics, ctx["auc_delta_ci"])
     (config.REPORTS_DIR / "results.md").write_text(md)
+    if config.REPORTS_DIR == config.ROOT / "reports":  # don't touch README for scratch runs
+        update_readme(md)
     print(md)
 
     figs = {
